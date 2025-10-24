@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    overflow: hidden; 
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+#game-container {
+    position: relative;
+    width: 3500px; 
+    height: 675px; 
+    overflow: hidden; 
+    margin: 0 auto; 
+    background-color: #add8e6; 
+}
+
+.casita-img {
+    width: 100%; 
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 55; /* Justo debajo del info-content/info-icon (200/100) */
+    object-fit: contain; /* Asegura que la imagen se ajuste sin distorsionarse */
+}
+
+#autopista {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10; /* La carretera siempre debe estar en el fondo */
+}
+
+#coche {
+    position: absolute;
+    width: 80px; 
+    height: auto;
+    cursor: grab;
+    left: 50px; 
+    top: 400px; 
+    z-index: 100; 
+}
+
+.casita {
+    position: absolute;
+    width: 120px; 
+    height: 120px; 
+    /* Las siguientes 3 líneas no son necesarias ya que la imagen lo centra: */
+    /* display: flex; 
+    justify-content: center;
+    align-items: center; */
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 50; 
+}
+
+/* Posiciona cada casita manualmente sobre la imagen de la autopista */
+#casita1 {
+    left: 400px;
+    top: 252px;
+}
+#casita2 {
+    left: 800px;
+    top: 252px;
+}
+
+.info-icon {
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    font-size: 1.2em;
+    position: absolute;
+    top: 0px; 
+    right: 0px; 
+    z-index: 150; /* Más alto que la casita */
+    display: none; /* Oculto por defecto, se muestra al colisionar */
+}
+
+.info-content {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 2px solid #333;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    max-width: 300px;
+    top: -150px; 
+    left: 150px; 
+    z-index: 200;
+    display: none; /* Oculto por defecto, se muestra al colisionar */
+}
+
+.info-content h3 {
+    margin-top: 0;
+    color: #0056b3;
+}
+
+.info-content img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 5px;
+}
