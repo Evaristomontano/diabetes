@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    overflow: hidden; 
+   /* overflow: hidden; */
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
 }
@@ -9,8 +9,12 @@ body {
     position: relative;
     width: 3500px; 
     height: 675px; 
-    overflow: hidden; 
-    margin: 0 auto; 
+    /* CAMBIO CRÍTICO: Usamos 'auto' para permitir que el JS controle el scroll lateral. */
+    overflow-x: auto; 
+    overflow-y: hidden; /* No queremos scroll vertical */
+    /* overflow: hidden; */
+   /* margin: 0 auto; */
+   margin: 0; 
     background-color: #add8e6; 
 }
 
