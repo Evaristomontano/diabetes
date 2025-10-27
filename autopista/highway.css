@@ -1,0 +1,139 @@
+/* ========================================================= */
+/* === HIGHWAY.CSS: Estilos del Modo Autopista === */
+/* ========================================================= */
+
+#game-container {
+    position: relative;
+    width: 3500px; 
+    height: 675px; 
+    overflow-x: auto; 
+    overflow-y: hidden; 
+    margin: 0; 
+    z-index: 1;
+    background-color: #add8e6; 
+}
+
+#autopista {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10; 
+}
+
+#coche {
+    position: absolute;
+    width: 80px; 
+    height: auto;
+    cursor: grab;
+    left: 50px; 
+    top: 400px; 
+    z-index: 100; 
+}
+
+#coche:focus {
+    /* FIX: Elimina el borde de foco naranja */
+    outline: none;
+    box-shadow: none;
+}
+
+#return-highway-to-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 60; 
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+/* --- Casitas --- */
+.casita {
+    position: absolute;
+    width: 120px; 
+    height: 120px; 
+    z-index: 50; 
+    transition: transform 0.3s;
+}
+
+#casita1 { left: 400px; top: 252px; }
+#casita2 { left: 800px; top: 252px; }
+
+.casita-img {
+    width: 100%; 
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 55; 
+    object-fit: contain; 
+}
+
+/* Oculta el contenido interno de las casitas */
+.casita .info-content {
+    display: none; 
+}
+
+/* --- Icono de Interacción --- */
+.info-icon {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 30px;
+    height: 30px;
+    background-color: #007bff; 
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    z-index: 100;
+}
+
+/* --- POP-UP DE INFORMACIÓN --- */
+#info-popup {
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 58vw;   
+    height: 75vh;  
+    background-color: rgba(255, 255, 255, 0.98); 
+    border: 3px solid #007bff;
+    border-radius: 15px;
+    padding: 5px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    z-index: 9999; 
+    overflow-y: auto; 
+    display: none; 
+    text-align: center;
+}
+
+#info-popup h2 {
+    color: #007bff;
+    margin-top: 0;
+}
+
+#info-popup img {
+    max-width: 95%;
+    height: 95%;
+    
+}
+
+
+/* --- OVERLAY GENERAL --- */
+.overlay-active::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); 
+    z-index: 9990; 
+}

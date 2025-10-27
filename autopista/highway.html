@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autopista Interactiva</title>
+    <!-- <link rel="stylesheet" href="base.css">  -->
+    <link rel="stylesheet" href="highway.css">
+</head>
+<body>
+    
+    <div id="game-container">
+        
+      <a href="../index.html"><button id="return-highway-to-menu">🏠 Zum Hauptmenü</button></a>
+
+        <img id="autopista" src="road1.png" alt="Autopista">
+        <img id="coche" src="car.svg" alt="Cochecito">
+
+        <div class="casita" id="casita1">
+            <img src="h1.svg" alt="Casita 1 Visible" class="casita-img">
+            <span class="info-icon">i</span>
+            <div class="info-content">
+                <img src="cont1.png" alt="Info Casita 1"> 
+            </div>
+        </div>
+
+        <div class="casita" id="casita2">
+            <img src="h2.svg" alt="Casita 2 Visible" class="casita-img"> 
+            <span class="info-icon">i</span>
+            <div class="info-content">
+                <img src="cont2.png" alt="Info Casita 2"> 
+            </div>
+        </div>
+        
+        </div>
+
+    <div id="info-popup" style="display: none;"> 
+        <h2 id="popup-title"></h2>
+        <div id="popup-text"></div>
+        <img id="popup-image" src="" alt="">
+    </div>
+
+    <audio id="sound-rev" src="revolucion.mp3" preload="auto"></audio>
+    <audio id="sound-collision" src="chime.wav" preload="auto"></audio>
+    <audio id="sound-start" src="car-noise.mp3" preload="auto"></audio>
+
+    <script src="highway.js"></script>
+</body>
+</html>
