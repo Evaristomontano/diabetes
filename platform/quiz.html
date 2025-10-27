@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Plattformen</title>
+    <link rel="stylesheet" href="quiz.css">
+</head>
+<body>
+    
+    <div id="quiz-game">
+        
+        <a href="../index.html"><button id="return-quiz-to-menu">🏠 Zurück zum Menü</button></a>
+
+        <div id="quiz-question">
+            <p id="question-text">Frage wird geladen...</p>
+        </div>
+
+        <div id="response-area">
+            <div class="response-block" id="block-a" data-answer="">
+                <div class="response-text" id="text-a">Option A</div>
+                <div class="brick">?</div>
+            </div>
+            <div class="response-block" id="block-b" data-answer="">
+                <div class="response-text" id="text-b">Option B</div>
+                <div class="brick">?</div>
+            </div>
+            <div class="response-block" id="block-c" data-answer="">
+                <div class="response-text" id="text-c">Option C</div>
+                <div class="brick">?</div>
+            </div>
+        </div>
+
+        <div id="player"></div>
+        <div id="ground"></div>
+
+        <div id="failure-message" class="quiz-popup-overlay" style="display: none;">
+            <h2>Falsche Antwort! 😔</h2>
+            <img id="failure-image" src="wrong.png" alt="Bild des Fehlschlags"> 
+            <p id="failure-text">Das ist nicht die richtige Antwort. Versuche es erneut.</p>
+            <p class="instruction-text">Drücke **O (Kreis)** oder klicke, um es erneut zu versuchen.</p>
+            <button id="close-failure-popup">Erneut versuchen</button>
+        </div>
+        
+        <div id="completion-message" class="quiz-popup-overlay" style="display: none;">
+            <h2>Herzlichen Glückwunsch! 🎉</h2>
+            <p>Du hast das Plattform-Level abgeschlossen und dein Wissen bewiesen.</p>
+            <img id="success-image" src="win.png" alt="Bild des Erfolgs"> 
+            <a href="../index.html"><button id="return-to-menu-final">Zurück zum Menü</button></a>
+        </div>
+    </div>
+    
+    <audio id="quiz-music" src="quiz_music.mp3" loop preload="auto"></audio>
+    <audio id="sound-correct" src="correct.mp3" preload="auto"></audio>
+    <audio id="sound-incorrect" src="incorrect.mp3" preload="auto"></audio>
+    <audio id="sound-success" src="success.mp3" preload="auto"></audio>
+    <script src="quiz.js"></script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+/* ========================================================= */
+/* === QUIZ.CSS: Estilos del Modo Quiz (Plataforma) === */
+/* ========================================================= */
+
+#quiz-game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #87ceeb; /* Fondo de cielo */
+    overflow: hidden;
+}
+
+#ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px; /* Altura del suelo */
+    background-color: #28a745; /* Color de pasto */
+    z-index: 10;
+}
+
+#player {
+   position: absolute;
+    width: 50px;
+    height: 50px;
+    background-color: #ff8c00;
+    z-index: 20;
+    border-radius: 5px;
+}
+
+/* --- BLOQUES DE PREGUNTAS Y RESPUESTAS --- */
+#quiz-question {
+    position: fixed; 
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 600px;
+    background-color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    z-index: 30; 
+}
+
+#question-text {
+    font-size: 1.3em;
+    color: #333;
+    margin: 0;
+}
+
+#response-area {
+    position: absolute;
+    width: 100%; 
+    bottom: 150px; 
+    display: flex;
+    justify-content: space-around; 
+    z-index: 15;
+}
+
+.response-block {
+    width: 250px; /* Tamaño para que quepa la respuesta */
+    height: 100px;
+    background-color: #007bff; 
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s, background-color 0.3s;
+    user-select: none;
+}
+
+.response-block:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* **CRÍTICO:** MANTENER VISIBLE POR DEFECTO (ELIMINAR display: none) */
+.response-text {
+    font-size: 1.1em;
+    font-weight: bold;
+    /* display: none; <-- ELIMINADO para que las respuestas se vean */
+    line-height: 1.2;
+}
+
+.brick {
+    /* **CRÍTICO:** OCULTAR el ladrillo '?' si la respuesta debe verse */
+    display: none; 
+}
+
+
+/* --- ESTILOS DE RESPUESTA TRAS SER GOLPEADO --- */
+
+.response-block.correct {
+    background-color: #28a745; 
+    cursor: default;
+    pointer-events: none;
+}
+
+.response-block.incorrect {
+    background-color: #dc3545; 
+    cursor: default;
+    pointer-events: none;
+}
+
+/* --- POP-UPS DE QUIZ (ÉXITO/FALLO) --- */
+
+.quiz-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 10001;
+    padding: 20px;
+}
+
+#failure-message img,
+#completion-message img { /* **CORRECCIÓN CRÍTICA: AJUSTAR TAMAÑO DE IMAGEN** */
+    max-width: 300px; 
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 3px solid white;
+}
+
+
+#failure-message h2 {
+    font-size: 3em;
+    color: #ff8c00;
+}
+
+#failure-message p {
+    font-size: 1.5em;
+    margin-bottom: 30px;
+}
+
+#failure-message button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 5px;
+    background-color: #dc3545;
+    color: white;
+    cursor: pointer;
+}
+
+.instruction-text {
+    font-size: 1em;
+    color: #f0f0f0;
+    margin-top: 10px;
+}
+
+
+/* --- MENSAJE DE FINALIZACIÓN (ÉXITO) --- */
+#completion-message h2 {
+    font-size: 3em;
+    color: #ffd700;
+}
+
+#completion-message button {
+    background-color: #28a745;
+}
+
+/* === BOTÓN VOLVER AL MENÚ === */
+#return-quiz-to-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 60; 
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#return-quiz-to-menu:hover {
+    background-color: #0056b3;
+}
