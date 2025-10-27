@@ -3,36 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autopista Interactiva</title>
+    <title>Diabetes: Interactivo</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="autopista/highway.css">
+    <link rel="stylesheet" href="platform/quiz.css">
 </head>
 <body>
-    <div id="game-container">
-        <img id="autopista" src="road1.png" alt="Autopista">
-        <img id="coche" src="car.svg" alt="Cochecito">
-
-        <div class="casita" id="casita1">
-            <img src="h1.svg" alt="Casita 1 Visible" class="casita-img">
-            <span class="info-icon">i</span>
-            <div class="info-content">
-                <h3>DIABETES INFO 1</h3>
-                <p>ehhhh</p>
-                <img src="h1.svg" alt="Info Casita 1"> </div>
-        </div>
-
-        <div class="casita" id="casita2">
-            <img src="h2.svg" alt="Casita 2 Visible" class="casita-img"> 
-            <span class="info-icon">i</span>
-            <div class="info-content">
-                <h3>DIABETES INFO 2</h3>
-                <p>ohhhhhh</p>
-                <img src="h2.svg" alt="Info Casita 2"> 
-            </div>
-        </div>
-
+    
+    <div id="main-menu">
+        <h1>Willkommen!</h1>
+        <p>Wähle deinen Lernmodus zum Thema Diabetes:</p>
+        
+        <a href="autopista/highway.html"><button id="start-highway">🚗  1. Autobahn erkunden (Interacción)</button></a>
+        <a href="platform/quiz.html"><button id="start-quiz">🎮 2. Plattform-Level (Wissenstest)</button></a>
+        
+        <p class="menu-note">Nutze den PS5-Controller für das beste Erlebnis.</p>
     </div>
-    <audio id="sound-collision" src="chime.wav" preload="auto"></audio>
-<audio id="sound-start" src="car-noise.mp3" preload="auto"></audio>
-    <script src="script.js"></script>
-</body>
+
+    </body>
 </html>
