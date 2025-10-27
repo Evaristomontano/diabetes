@@ -1,0 +1,53 @@
+/* ========================================================= */
+/* === MENU.CSS: Estilos del Menú Principal === */
+/* ========================================================= */
+
+#main-menu {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    background-color: #f0f8ff; 
+    z-index: 10000; 
+    text-align: center;
+}
+
+#main-menu h1 {
+    font-size: 2.5em;
+    color: #007bff;
+    margin-bottom: 0.5em;
+}
+
+#main-menu p {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 2em;
+}
+
+#main-menu button {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 1.3em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    background-color: #007bff;
+    color: white;
+}
+
+#main-menu button:hover {
+    background-color: #0056b3;
+}
+
+.menu-note {
+    font-style: italic;
+    font-size: 0.9em !important;
+    margin-top: 20px;
+    color: #6c757d !important;
+}
