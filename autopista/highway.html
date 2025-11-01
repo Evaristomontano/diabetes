@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autopista Interactiva</title>
-    <!-- <link rel="stylesheet" href="base.css">  -->
-    <link rel="stylesheet" href="highway.css">
+    <link rel="stylesheet" href="../base.css">  <link rel="stylesheet" href="highway.css">
 </head>
 <body>
     
+    <div class="rotate-device-message">
+        <h2>Bitte Gerät drehen! 🔄</h2>
+        <p>Für das beste Spielerlebnis drehen Sie Ihr Gerät bitte ins Querformat (Landschaft).</p>
+        <p>*(For the best game experience, please rotate your device to landscape mode.)*</p>
+    </div>
+
     <div id="game-container">
         
       <a href="../index.html"><button id="return-highway-to-menu">🏠 Zum Hauptmenü</button></a>
@@ -31,13 +36,33 @@
                 <img src="cont2.png" alt="Info Casita 2"> 
             </div>
         </div>
+
+          <div class="casita" id="casita3">
+            <img src="h3.svg" alt="Casita 3 Visible" class="casita-img"> 
+            <span class="info-icon">i</span>
+            <div class="info-content">
+                <img src="cont2.png" alt="Info Casita 3"> 
+            </div>
+        </div>
         
         </div>
 
     <div id="info-popup" style="display: none;"> 
-        <h2 id="popup-title"></h2>
-        <div id="popup-text"></div>
+       
         <img id="popup-image" src="" alt="">
+    </div>
+    
+    <div id="mobile-controls">
+        <div class="d-pad">
+            <div class="control-button" id="control-up" data-key="w">▲</div>
+            <div class="control-button" id="control-left" data-key="a">◀</div>
+            <div class="control-button" id="control-center"></div>
+            <div class="control-button" id="control-right" data-key="d">▶</div>
+            <div class="control-button" id="control-down" data-key="s">▼</div>
+        </div>
+        <div class="action-buttons">
+            <div class="control-button" id="control-action" data-key="x">X</div>
+        </div>
     </div>
 
     <audio id="sound-rev" src="revolucion.mp3" preload="auto"></audio>

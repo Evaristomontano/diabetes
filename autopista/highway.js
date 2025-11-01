@@ -4,101 +4,138 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameContainer = document.getElementById('game-container');
     const coche = document.getElementById('coche');
     const casitas = document.querySelectorAll('.casita');
-    const infoPopup = document.getElementById('info-popup'); // El div del pop-up
+    const infoPopup = document.getElementById('info-popup'); 
     const closeInfoButton = document.getElementById('close-info-popup');
 
     // Estado del juego
     let isDragging = false;
     let offset = { x: 0, y: 0 };
-    // activeCasita = null: Pop-up cerrado. activeCasita = ID: Pop-up abierto en esa casita.
     let activeCasita = null; 
 
     // --- Variables de Audio ---
     const soundStart = document.getElementById('sound-start');
     const soundCollision = document.getElementById('sound-collision');
     const soundRev = document.getElementById('sound-rev'); 
+    let isMusicPlaying = false; 
     
-    // --- Variables de Gamepad ---
+    // **MODIFICACIÓN: Configuración de loop y volumen al inicio, garantizando el loop.**
+    if (soundRev) {
+        soundRev.loop = true; 
+        soundRev.volume = 0.5;
+    }
+    
+    // --- Variables de Gamepad / Teclado / Mobile ---
     let isGamepadConnected = false; 
     let gamePadIndex = null;
     const speedMultiplier = 5; 
     const scrollMultiplier = 8;
-    let isXButtonDown = false; // Botón X (0) - Usado para interacción
-    let isOButtonDown = false; // Botón Círculo (1) - Usado para cerrar
-    let isR2Down = false;      // Gatillo R2 (Eje 5) - Usado para sonido/motor
+    let isR2Down = false;      
+    let keys = {};             
     
-    // Reproducir sonido inicial (una vez)
-   if (soundStart) {
-            soundStart.currentTime = 0; 
-            soundStart.play(); 
+    
+    // =========================================================
+    //         1.1. CONTROL DE AUDIO POR INTERACCIÓN
+    // =========================================================
+
+    function playAudioOnInteraction() {
+        if (!isMusicPlaying) {
+            // Reproducir sonido inicial (motor de inicio)
+            if (soundStart) {
+                soundStart.currentTime = 0; 
+                soundStart.play().catch(e => console.error("Sound start autoplay blocked:", e));
+            }
+            // Ya no es necesario configurar loop y volumen aquí porque se hace al inicio del script.
+            isMusicPlaying = true;
+            // Remover listeners después de la primera interacción
+            document.body.removeEventListener('click', playAudioOnInteraction);
+            document.body.removeEventListener('keydown', playAudioOnInteraction);
+            window.removeEventListener("gamepadconnected", playAudioOnInteraction);
         }
+    }
+    // Agregar listeners para la primera interacción
+    document.body.addEventListener('click', playAudioOnInteraction, { once: true });
+    document.body.addEventListener('keydown', playAudioOnInteraction, { once: true });
+    window.addEventListener("gamepadconnected", playAudioOnInteraction, { once: true });
+
+    // =========================================================
+    //         1.2. LÍMITES DE LA CARRETERA
+    // =========================================================
     
+    function getRoadLimits() {
+        // Los límites son empíricos basados en road1.png.
+        const roadLimits = {
+            minY: 340, 
+            maxY: 550 
+        };
+        const cocheHeight = coche.offsetHeight;
+        roadLimits.maxY = roadLimits.maxY - cocheHeight; 
+
+        return roadLimits;
+    }
+
+
     // =========================================================
     //         2. FUNCIONES DE POP-UP Y COLISIÓN
     // =========================================================
 
     function activateCollision(casita, casitaId) {
-        // Evitar activar si ya está abierto (solo debería suceder si activeCasita es null)
         if (activeCasita !== null) return; 
 
-        // 1. Marcar estado y evitar movimiento/otras colisiones
         activeCasita = casitaId; 
         
-        // 2. Obtener y mostrar contenido
         const contentDiv = casita.querySelector('.info-content');
-        const popupTitle = document.getElementById('popup-title');
-        const popupText = document.getElementById('popup-text');
         const popupImage = document.getElementById('popup-image');
-        
-        // Asumiendo que obtienes el título, texto e imagen del info-content de la casita
-        // NOTA: Si el info-content SOLO tiene una imagen, puedes simplificar la transferencia aquí.
         const casitaImg = contentDiv.querySelector('img');
 
-         popupImage.src = casitaImg.src; 
+        if (casitaImg) {
+            popupImage.src = casitaImg.src; 
+        } else {
+             popupImage.src = "";
+        }
         
-        // Mostrar el pop-up
-        infoPopup.style.display = 'block';
+        infoPopup.style.display = 'flex'; 
         document.body.classList.add('overlay-active');
         
-        // 3. Sonido
         if (soundCollision) {
             soundCollision.currentTime = 0;
             soundCollision.play();
+        }
+        
+        // Pausar el sonido del motor si está activo (la colisión lo silencia)
+        if (soundRev && !soundRev.paused) { 
+             soundRev.pause();
         }
     }
 
     function deactivateCollision() {
         if (activeCasita === null) return;
         
-        // 1. Marcar estado (CERRAR)
         activeCasita = null;
 
-        // 2. Ocultar pop-up y overlay
         infoPopup.style.display = 'none';
         document.body.classList.remove('overlay-active');
         
-        // 3. Limpiar contenido (opcional)
         document.getElementById('popup-image').src = "";
     }
 
-    // --- Evento para cerrar pop-up con botón ---
     if (closeInfoButton) {
         closeInfoButton.addEventListener('click', deactivateCollision);
     }
+    
+    infoPopup.addEventListener('click', (e) => {
+        if (e.target.id === 'info-popup') { 
+            deactivateCollision();
+        }
+    });
+
 
     /**
      * Verifica colisión.
-     * @param {boolean} immediate - Si true (arrastre), activa el pop-up inmediatamente. 
-     * Si false (gameLoop), solo muestra el icono 'X' o espera la pulsación.
      */
-    function checkCollision(immediate = false) {
-        // Si el pop-up está abierto y estamos en modo gamepad, no verificamos colisiones (activeCasita se usa para cerrar)
-        // PERO: Si activeCasita está abierto y estamos en modo drag (immediate=true), el arrastre debe poder cerrarlo.
-        // La condición de retorno anterior aquí solo evitaría que el gamepad re-detecte colisión.
-
+    function checkCollision() {
         const cocheRect = coche.getBoundingClientRect();
         const padding = 30; // Margen de colisión
-        let isCollidingNow = false; // Rastrea si colisionamos con CUALQUIER casita en este frame.
+        let isCollidingNow = false; 
 
         casitas.forEach(casita => {
             const casitaRect = casita.getBoundingClientRect();
@@ -113,32 +150,19 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             if (collision) {
-                isCollidingNow = true; // El coche está sobre algo.
+                isCollidingNow = true; 
                 
                 if (activeCasita === null) { 
-                    // No hay pop-up abierto y colisionamos
-                    if (immediate) {
-                        // MODO RATÓN/TOUCH (Drag): Activación inmediata al colisionar
-                        activateCollision(casita, casitaId);
-                    } else {
-                        // MODO GAMEPAD (gameLoop): Muestra el icono 'X' y espera la pulsación
-                        infoIcon.textContent = 'X';
-                        infoIcon.style.backgroundColor = '#007bff';
-                        infoIcon.style.display = 'flex'; 
-                        
-                        if (isXButtonDown) {
-                            activateCollision(casita, casitaId);
-                        }
-                    }
+                    activateCollision(casita, casitaId);
+                    infoIcon.style.display = 'none';
+                } else {
+                    infoIcon.style.display = 'none';
                 }
             } else {
-                // No hay colisión con ESTA casita
                 infoIcon.style.display = 'none';
             }
         });
 
-        // ********* LÓGICA CLAVE DE CIERRE POR MOVIMIENTO *********
-        // Si el pop-up está abierto Y el coche no está colisionando con NINGUNA casita ahora, lo cerramos.
         if (activeCasita !== null && !isCollidingNow) {
             deactivateCollision();
         }
@@ -150,17 +174,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================
 
     function startDrag(e) {
-        if (activeCasita !== null) return; // No se puede arrastrar si el pop-up está abierto
-
+        // Cierra el pop-up si intentas arrastrar
+        if (activeCasita !== null) {
+            deactivateCollision();
+        }
+        
         isDragging = true;
-        // Permite arrastrar tanto con ratón como con touch
         const clientX = e.clientX || e.touches[0].clientX;
         const clientY = e.clientY || e.touches[0].clientY;
-        if (soundStart) {
-            soundStart.currentTime = 0; 
-            soundStart.play(); 
+        
+        // Inicia el sonido de revolución
+        if (soundRev && soundRev.paused) {
+             soundRev.play().catch(e => console.error("Rev sound play blocked:", e));
         }
-        // Calcular offset para un arrastre suave
+        playAudioOnInteraction(); 
+
         const cocheRect = coche.getBoundingClientRect();
         offset = {
             x: clientX - cocheRect.left,
@@ -172,70 +200,84 @@ document.addEventListener('DOMContentLoaded', () => {
     function drag(e) {
         if (!isDragging) return; 
         
-        // Evitar el scroll de la página durante el arrastre
         e.preventDefault(); 
         
-        // Permite arrastrar tanto con ratón como con touch
+        const { minY, maxY } = getRoadLimits(); 
+
         const clientX = e.clientX || e.touches[0].clientX;
         const clientY = e.clientY || e.touches[0].clientY;
 
         let newLeft = clientX - offset.x - gameContainer.getBoundingClientRect().left + gameContainer.scrollLeft;
         let newTop = clientY - offset.y - gameContainer.getBoundingClientRect().top;
         
-        // Limitar movimiento dentro de los límites del gameContainer
         const maxLeft = gameContainer.scrollWidth - coche.offsetWidth;
-        const maxTop = gameContainer.offsetHeight - coche.offsetHeight;
 
+        // 1. Limitar Lados (Izquierda/Derecha)
         newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-        newTop = Math.max(0, Math.min(newTop, maxTop));
+        
+        // 2. Limitar Verticalmente (Arriba/Abajo) a la carretera
+        newTop = Math.max(minY, Math.min(newTop, maxY));
         
         coche.style.left = `${newLeft}px`;
         coche.style.top = `${newTop}px`;
         
-        // SCROLL DE PANTALLA (Asegura que el coche se mantenga en el centro de la vista)
         const viewCenter = gameContainer.offsetWidth / 2;
         const carCenter = newLeft + coche.offsetWidth / 2;
         gameContainer.scrollLeft = carCenter - viewCenter;
         
-        // Detección de colisión en tiempo real (immediate = true)
-        // Esto activará el pop-up si colisiona, O lo cerrará si se ha movido fuera.
-        checkCollision(true); 
+        checkCollision(); 
     }
 
     function endDrag() {
         isDragging = false;
         coche.style.cursor = 'grab';
         
-        // Al soltar el coche, volvemos a verificar por si estaba justo en el límite
-        // checkCollision(true); 
+        // Pausa el motor al soltar el coche
+        if (soundRev && !soundRev.paused) { 
+             soundRev.pause();
+        }
     }
 
-    // Asignación de eventos de Ratón
+    // Asignación de eventos de Ratón/Touch
     coche.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
-
-    // Asignación de eventos de Touch
     coche.addEventListener('touchstart', (e) => startDrag(e.touches[0]), { passive: false });
     document.addEventListener('touchmove', (e) => drag(e.touches[0]), { passive: false });
     document.addEventListener('touchend', endDrag);
 
 
     // =========================================================
-    //         4. LÓGICA DE GAMEPAD
+    //         4. LÓGICA DE TECLADO Y GAMEPAD
     // =========================================================
+    
+    function setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            
+            // PREVENIR EL SCROLL DEL NAVEGADOR con las flechas
+            if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                e.preventDefault(); 
+            }
+            
+            keys[key] = true;
+            playAudioOnInteraction(); 
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+    }
 
     window.addEventListener("gamepadconnected", (e) => {
         isGamepadConnected = true;
         gamePadIndex = e.gamepad.index;
-        console.log("Gamepad conectado en el índice %d: %s",
-            e.gamepad.index, e.gamepad.id);
+        playAudioOnInteraction(); 
     });
 
     window.addEventListener("gamepaddisconnected", () => {
         isGamepadConnected = false;
         gamePadIndex = null;
-        console.log("Gamepad desconectado.");
     });
     
     // =========================================================
@@ -243,70 +285,132 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================
 
     function gameLoop() {
+        let gamepad = null;
         if (isGamepadConnected && gamePadIndex !== null) {
-            const gamepad = navigator.getGamepads()[gamePadIndex];
+            gamepad = navigator.getGamepads()[gamePadIndex];
+        } 
+        
+        // --- 1. DETECCIÓN DE ENTRADA PARA CERRAR POP-UP ---
+        if (activeCasita !== null) {
+             let inputDetectedToClose = false;
 
+             // 1a. Teclado (WASD/Flechas)
+             // Solo verificamos WASD, ya que las flechas están bloqueadas para movimiento
+             if (keys['a'] || keys['d'] || keys['w'] || keys['s']) {
+                inputDetectedToClose = true;
+            }
+            
+            // 1b. Gamepad Sticks/Buttons
             if (gamepad) {
-                const currentLeft = parseFloat(coche.style.left) || 0;
-                const currentTop = parseFloat(coche.style.top) || 0;
-                const container = gameContainer;
-
-                // --- 1. ESTADO DE BOTONES (Solo Botón X y Círculo para Interacción/Cierre) ---
-                isXButtonDown = gamepad.buttons[0].pressed; // Botón X
-                isOButtonDown = gamepad.buttons[1].pressed; // Botón Círculo
-
-                // --- 2. GATILLO R2 (ACELERACIÓN/SONIDO) ---
-                const r2Axis = gamepad.axes[5]; 
-                if (r2Axis > 0.5 && !isR2Down) {
-                    if (soundRev) {
-                        soundRev.currentTime = 0;
-                        soundRev.play();
-                    }
-                    isR2Down = true;
-                } else if (r2Axis <= 0.5) {
-                    isR2Down = false;
+                // Stick movement check
+                const xAxis = gamepad.axes[0]; 
+                const yAxis = gamepad.axes[1]; 
+                if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+                    inputDetectedToClose = true;
                 }
-
-                // --- 3. CERRAR POP-UP con botón O (Círculo) ---
-                if (isOButtonDown && activeCasita !== null) { 
-                    deactivateCollision();
-                }
-
-                // --- 4. MOVER COCHE (GamePad) ---
-                if (activeCasita === null) { // Solo se puede mover si no hay un pop-up activo
-                    const xAxis = gamepad.axes[0]; // Stick izquierdo Eje X
-                    const yAxis = gamepad.axes[1]; // Stick izquierdo Eje Y
-                    
-                    if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
-                        let newLeft = currentLeft + (xAxis * speedMultiplier);
-                        let newTop = currentTop + (yAxis * speedMultiplier);
-                        
-                        const maxLeft = container.scrollWidth - coche.offsetWidth;
-                        const maxTop = container.offsetHeight - coche.offsetHeight;
-
-                        newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-                        newTop = Math.max(0, Math.min(newTop, maxTop));
-                        
-                        coche.style.left = `${newLeft}px`;
-                        coche.style.top = `${newTop}px`;
-
-                        // SCROLL DE PANTALLA
-                        container.scrollLeft += xAxis * scrollMultiplier; 
+                
+                // Any Button press check
+                for (let i = 0; i < gamepad.buttons.length; i++) {
+                    if (gamepad.buttons[i].pressed) {
+                         inputDetectedToClose = true;
+                         break;
                     }
                 }
             }
+
+            if (inputDetectedToClose) {
+                deactivateCollision();
+            }
+        }
+        
+        
+        // --- 2. GESTIÓN DE R2 / SONIDO ---
+        if (gamepad) {
+            const r2Axis = gamepad.axes[5]; 
+            if (r2Axis > 0.5 && !isR2Down) {
+                if (soundRev && soundRev.paused) { // Solo si está en pausa
+                    soundRev.play().catch(e => console.error("Rev sound play blocked:", e));
+                }
+                isR2Down = true;
+            } else if (r2Axis <= 0.5 && isR2Down) {
+                isR2Down = false;
+            }
+        }
+
+
+        // --- 3. MOVER COCHE (GamePad/Teclado) ---
+        if (activeCasita === null && !isDragging) { 
+            const currentLeft = parseFloat(coche.style.left) || 0;
+            const currentTop = parseFloat(coche.style.top) || 0;
+            const container = gameContainer;
+            const { minY, maxY } = getRoadLimits(); 
+
+            let deltaX = 0;
+            let deltaY = 0;
+
+            // 3a. Gamepad Input
+            if (gamepad) {
+                const xAxis = gamepad.axes[0]; 
+                const yAxis = gamepad.axes[1]; 
+                
+                // Gamepad Sticks
+                deltaX += xAxis * speedMultiplier;
+                deltaY += yAxis * speedMultiplier;
+
+                // D-Pad
+                if (gamepad.buttons[14]?.pressed) { deltaX -= speedMultiplier; }
+                if (gamepad.buttons[15]?.pressed) { deltaX += speedMultiplier; }
+                if (gamepad.buttons[12]?.pressed) { deltaY -= speedMultiplier; }
+                if (gamepad.buttons[13]?.pressed) { deltaY += speedMultiplier; }
+            }
+            
+            // **MODIFICACIÓN: Teclado/Mobile D-Pad Input (SOLO WASD)**
+            if (keys['a']) { deltaX -= speedMultiplier; } 
+            if (keys['d']) { deltaX += speedMultiplier; }
+            if (keys['w']) { deltaY -= speedMultiplier; }
+            if (keys['s']) { deltaY += speedMultiplier; }
+            
+            // --- APLICAR MOVIMIENTO ---
+            if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
+                 // Inicia el sonido de Rev si se detecta movimiento por sticks/teclado y no está presionado R2.
+                 if (soundRev && soundRev.paused && !isR2Down) {
+                     soundRev.play().catch(e => console.error("Rev sound play blocked:", e));
+                 }
+                
+                let newLeft = currentLeft + deltaX;
+                let newTop = currentTop + deltaY;
+                
+                const maxLeft = container.scrollWidth - coche.offsetWidth;
+                
+                // 1. Limitar Lados (Izquierda/Derecha)
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                
+                // 2. Limitar Verticalmente (Arriba/Abajo) a la carretera
+                newTop = Math.max(minY, Math.min(newTop, maxY)); 
+                
+                coche.style.left = `${newLeft}px`;
+                coche.style.top = `${newTop}px`;
+
+                // SCROLL DE PANTALLA
+                container.scrollLeft += deltaX * (scrollMultiplier / speedMultiplier); 
+            } else {
+                 // Pausar sonido de Rev si no hay movimiento y R2 no está presionado.
+                 if (soundRev && !soundRev.paused && !isR2Down) { 
+                      soundRev.pause();
+                 }
+            }
         } 
         
-        // 5. DETECCIÓN DE COLISIÓN (Se llama siempre, incluso en Gamepad)
-        // Esto permite que:
-        // A) En Gamepad: Muestre el icono 'X' o active el pop-up si se pulsa 'X'.
-        // B) La lógica de cierre por movimiento funcione: si activeCasita != null y ¡ya no hay colisión!, se cierra.
-        checkCollision(false); 
+        // 4. DETECCIÓN DE COLISIÓN
+        checkCollision(); 
 
         requestAnimationFrame(gameLoop); 
     }
     
     // 6. Inicialización del bucle
+    coche.style.left = `50px`; 
+    coche.style.top = `400px`; 
+    setupKeyboardControls(); 
     requestAnimationFrame(gameLoop); 
     
 });
