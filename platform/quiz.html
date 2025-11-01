@@ -1,12 +1,19 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Plattformen</title>
-    <link rel="stylesheet" href="quiz.css">
+    <link rel="stylesheet" href="../base.css"> <link rel="stylesheet" href="quiz.css">
 </head>
 <body>
+    
+    <div class="rotate-device-message">
+        <h2>Bitte Gerät drehen! 🔄</h2>
+        <p>Für das beste Spielerlebnis drehen Sie Ihr Gerät bitte ins Querformat (Landschaft).</p>
+        <p>*(For the best game experience, please rotate your device to landscape mode.)*</p>
+    </div>
     
     <div id="quiz-game">
         
@@ -38,8 +45,8 @@
             <h2>Falsche Antwort! 😔</h2>
             <img id="failure-image" src="wrong.png" alt="Bild des Fehlschlags"> 
             <p id="failure-text">Das ist nicht die richtige Antwort. Versuche es erneut.</p>
-            <p class="instruction-text">Drücke **O (Kreis)** oder klicke, um es erneut zu versuchen.</p>
-            <button id="close-failure-popup">Erneut versuchen</button>
+            <!-- <p class="instruction-text">Drücke **X/A** (Gamepad), **X** (Bildschirm) oder klicke, um es erneut zu versuchen.</p>
+            <button id="close-failure-popup">Erneut versuchen</button> -->
         </div>
         
         <div id="completion-message" class="quiz-popup-overlay" style="display: none;">
@@ -54,6 +61,19 @@
     <audio id="sound-correct" src="correct.mp3" preload="auto"></audio>
     <audio id="sound-incorrect" src="incorrect.mp3" preload="auto"></audio>
     <audio id="sound-success" src="success.mp3" preload="auto"></audio>
+    
+    <div id="mobile-controls">
+        <div class="d-pad">
+            <div class="control-button" id="control-up" data-key="w">▲</div>
+            <div class="control-button" id="control-left" data-key="a">◀</div>
+            <div class="control-button" id="control-center"></div>
+            <div class="control-button" id="control-right" data-key="d">▶</div>
+            <div class="control-button" id="control-down" data-key="s">▼</div>
+        </div>
+        <div class="action-buttons">
+            <div class="control-button" id="control-action" data-key="x">X</div>
+        </div>
+    </div>
     <script src="quiz.js"></script>
 </body>
 </html>

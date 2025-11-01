@@ -29,54 +29,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const gravity = -0.5;
     const jumpForce = 15;
     const playerSpeed = 5;
-    let keys = {};
+    let keys = {}; // Para teclado/mobile
     
     // --- Gamepad ---
     let isGamepadConnected = false;
     let gamePadIndex = null;
-    let isXButtonDown = false;
-    let isOButtonDown = false;
-    const O_BUTTON_INDEX = 1;
+    let isXButtonDown = false; // Botón X (0) para saltar
 
-    const groundHeight = ground.offsetHeight;
-    let isMusicPlaying = false;
+    // Flag para la música
+    let isMusicPlaying = false; 
 
-    // =========================================================
-    //         2. FRAGEN (PREGUNTAS)
-    // =========================================================
+
+    // === 2. DATOS DE PREGUNTAS ===
     const quizQuestions = [
         {
-            question: "Was ist Diabetes mellitus Typ 1?",
-            options: [
-                "Eine Krankheit, bei der der Körper zu viel Insulin produziert.",
-                "Eine Autoimmunerkrankung, bei der die Bauchspeicheldrüse kein Insulin produziert.",
-                "Eine Erkrankung, die nur durch schlechte Ernährung verursacht wird."
-            ],
-            correctAnswer: "Eine Autoimmunerkrankung, bei der die Bauchspeicheldrüse kein Insulin produziert."
+            question: "Welche Funktion hat Insulin im menschlichen Körper?",
+            options: ["Es senkt den Blutzuckerspiegel.", "Es erhöht den Blutzuckerspiegel.", "Es steuert die Körpertemperatur."],
+            correctAnswer: 0, 
+            correctText: "Korrekt! Insulin hilft, den Zucker aus dem Blut in die Zellen zu bringen.",
+            incorrectText: "Nicht ganz richtig. Insulin ist der Schlüssel, der Zucker in die Zellen lässt."
         },
         {
-            question: "Welche Funktion hat Insulin im Körper?",
-            options: [
-                "Es baut Muskelmasse auf.",
-                "Es hilft, Glukose aus dem Blut in die Zellen zu transportieren.",
-                "Es reguliert den Blutdruck."
-            ],
-            correctAnswer: "Es hilft, Glukose aus dem Blut in die Zellen zu transportieren."
+            question: "Was ist ein Symptom von hohem Blutzucker (Hyperglykämie)?",
+            options: ["Starker Durst und häufiges Wasserlassen.", "Plötzliche Gewichtszunahme.", "Sehr niedrige Herzfrequenz."],
+            correctAnswer: 0, 
+            correctText: "Richtig! Der Körper versucht, den überschüssigen Zucker loszuwerden.",
+            incorrectText: "Falsch. Hoher Blutzucker führt typischerweise zu starkem Durst und Müdigkeit."
         },
         {
-            question: "Was ist eine Hypoglykämie?",
-            options: [
-                "Ein extrem hoher Blutzuckerspiegel.",
-                "Ein normaler Blutzuckerspiegel.",
-                "Ein extrem niedriger Blutzuckerspiegel."
-            ],
-            correctAnswer: "Ein extrem niedriger Blutzuckerspiegel."
+            question: "Wie oft sollte der Blutzucker gemessen werden?",
+            options: ["Einmal täglich ist genug.", "Nur nach dem Essen.", "Mehrmals täglich, je nach Behandlungsplan."],
+            correctAnswer: 2, 
+            correctText: "Genau! Eine regelmäßige Messung ist wichtig für die Kontrolle.",
+            incorrectText: "Fast! Die Messfrequenz hängt vom individuellen Behandlungsplan ab, oft mehrmals täglich."
         },
+        // Añade más preguntas aquí (máx. 3 bloques visibles)
+        {
+            question: "Was ist wichtig bei der Lagerung von Insulin?",
+            options: ["Im Gefrierschrank aufbewahren.", "Vor direkter Sonneneinstrahlung schützen.", "Es kann bei Raumtemperatur gelagert werden."],
+            correctAnswer: 1, 
+            correctText: "Ausgezeichnet! Insulin ist hitze- und lichtempfindlich.",
+            incorrectText: "Leider falsch. Insulin sollte kühl, aber nicht gefroren, und vor Licht geschützt gelagert werden."
+        },
+        {
+            question: "Welche dieser Mahlzeiten lässt den Blutzucker am schnellsten ansteigen?",
+            options: ["Ein großer Teller Gemüse.", "Ein Stück Brot mit Marmelade.", "Ein Steak ohne Beilagen."],
+            correctAnswer: 1, 
+            correctText: "Korrekt! Kohlenhdratoe, especialmente simple, lassen den Blutzucker schnell steigen.",
+            incorrectText: "Falsch. Kohlenhydrate, wie Brot und Marmelade, wirken sich am schnellsten aus."
+        }
     ];
 
-    // =========================================================
-    //         3. HILFSFUNKCIONEN
-    // =========================================================
+    // === 3. HILFSFUNKCIONEN ===
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -86,276 +90,316 @@ document.addEventListener('DOMContentLoaded', () => {
         return array;
     }
 
+    function playMusic() {
+        if (!isMusicPlaying && quizMusic.paused) {
+            quizMusic.play().catch(e => console.log("Music auto-play blocked:", e));
+            isMusicPlaying = true;
+            // Remover listeners después de la primera interacción
+            document.body.removeEventListener('click', playMusic);
+            document.body.removeEventListener('keydown', playMusic);
+            window.removeEventListener("gamepadconnected", playMusic);
+        }
+    }
+
     function loadQuestion() {
         if (currentQuestionIndex >= shuffledQuestions.length) {
             handleCompletion();
             return;
         }
-
+        
         const q = shuffledQuestions[currentQuestionIndex];
         questionText.textContent = q.question;
-        const shuffledOptions = shuffleArray([...q.options]);
+        
+        // Asignar opciones a bloques
+        const optionIndices = [0, 1, 2];
+        const shuffledOptions = shuffleArray([...optionIndices]); // Mezcla los índices para no mostrar A, B, C siempre en el mismo orden
 
         responseBlocks.forEach((block, index) => {
-            const optionText = shuffledOptions[index];
-            const isCorrect = optionText === q.correctAnswer;
-            
-            block.querySelector('.response-text').textContent = optionText;
-            block.setAttribute('data-answer', isCorrect ? 'correct' : 'incorrect');
-            
-            block.classList.remove('correct', 'incorrect'); 
-            block.style.pointerEvents = 'auto';
-
-            const brick = block.querySelector('.brick');
-            const text = block.querySelector('.response-text');
-            if (brick) brick.style.display = 'none';
-            if (text) text.style.display = 'block'; 
+            const originalIndex = shuffledOptions[index]; // Obtiene el índice original de la opción
+            block.querySelector('.response-text').textContent = q.options[originalIndex];
+            block.setAttribute('data-answer', originalIndex === q.correctAnswer ? 'correct' : 'incorrect');
+            block.classList.remove('incorrect-block', 'correct-answer'); // Limpia la clase de acierto/fallo
+            block.style.pointerEvents = 'auto'; 
+            block.style.display = 'flex'; // Asegura que los bloques estén visibles
         });
 
-        questionAttempted = false; 
+        questionAttempted = false; // Reinicia el estado de intento
     }
 
-    function playMusic() {
-        if (!isMusicPlaying && quizMusic) {
-            quizMusic.loop = true;
-            quizMusic.volume = 0.5;
-            quizMusic.play().then(() => {
-                isMusicPlaying = true;
-            }).catch(e => {
-                console.log("Audio play prevented/failed:", e);
-                isMusicPlaying = false;
-            });
+    function checkAnswer(block) {
+        if (questionAttempted) return;
+        questionAttempted = true;
+        
+        responseBlocks.forEach(b => b.style.pointerEvents = 'none'); // Desactiva clics
+        
+        if (block.getAttribute('data-answer') === 'correct') {
+            // Resaltar en verde el bloque correcto
+            block.classList.add('correct-answer'); 
+            
+            if (soundCorrect) soundCorrect.play();
+            
+            // Esperar un momento antes de cargar la siguiente
+            setTimeout(() => {
+                // Limpiar la clase de acierto antes de cargar la siguiente
+                block.classList.remove('correct-answer');
+                currentQuestionIndex++;
+                playerX = quizGame.offsetWidth * 0.05 - (player.offsetWidth / 2); // Reposiciona al jugador
+                playerY = 0;
+                player.style.left = `${playerX}px`;
+                player.style.bottom = `${ground.offsetHeight}px`;
+                loadQuestion();
+            }, 800);
+
+        } else {
+            // Fallo: solo resaltamos el bloque golpeado como incorrecto y mostramos el pop-up
+            block.classList.add('incorrect-block');
+            if (soundIncorrect) soundIncorrect.play();
+            // Esperar un momento para que se vea el rojo antes del pop-up
+            setTimeout(() => {
+                block.classList.remove('incorrect-block');
+                handleFailure();
+            }, 500);
         }
     }
 
-    // **FUNCIÓN: Resetear posición del personaje al suelo**
-    function resetPlayerPosition() {
-        playerY = 0;
-        playerVelocityY = 0;
-        isJumping = false;
-        player.style.bottom = `${groundHeight}px`;
-    }
-
     function checkCollision() {
-        if (questionAttempted || isPopupOpen) return;
-
+        if (isPopupOpen) return;
+        
         const playerRect = player.getBoundingClientRect();
-
+        
         responseBlocks.forEach(block => {
             const blockRect = block.getBoundingClientRect();
             
-            if (
-                playerRect.bottom >= blockRect.top &&
-                playerRect.top <= blockRect.bottom &&
-                playerRect.right >= blockRect.left &&
-                playerRect.left <= blockRect.right
-            ) {
-                if (playerVelocityY < 0 && playerRect.bottom >= blockRect.top && playerRect.bottom < blockRect.bottom + 5) { 
+            // Colisión
+            const collision = (
+                playerRect.right > blockRect.left &&
+                playerRect.left < blockRect.right &&
+                playerRect.bottom > blockRect.top &&
+                playerRect.top < blockRect.bottom
+            );
+
+            if (collision) {
+                // Si la colisión ocurre desde arriba (aterrizando sobre el bloque)
+                // y el jugador se está moviendo hacia abajo (o está estático)
+                const isFalling = playerVelocityY <= 0;
+                const cameFromAbove = playerRect.bottom <= blockRect.top + 10; 
+
+                if (cameFromAbove && isFalling) {
+                    playerY = blockRect.height + 10; // Ajustar posición (altura del bloque + buffer)
+                    playerVelocityY = 0;
+                    isJumping = false;
+                    // Responder la pregunta al colisionar
                     checkAnswer(block);
                 }
             }
         });
     }
 
-    function checkAnswer(block) {
-        if (questionAttempted) return; 
-        
-        questionAttempted = true; 
-
-        // **CRÍTICO: Resetear la posición del personaje al suelo INMEDIATAMENTE**
-        resetPlayerPosition();
-
-        if (block.getAttribute('data-answer') === 'correct') {
-            block.classList.add('correct');
-            soundCorrect.play();
-            setTimeout(() => {
-                currentQuestionIndex++;
-                loadQuestion();
-            }, 1200); 
-        } else {
-            block.classList.add('incorrect');
-            soundIncorrect.play();
-            handleFailure();
-        }
-        
-        playMusic();
-    }
-    
     function handleFailure() {
-        isPopupOpen = true; 
+        isPopupOpen = true;
         failureMessage.style.display = 'flex';
-        if (isMusicPlaying && quizMusic) quizMusic.pause(); 
+        // Agregamos un listener para cerrar al hacer clic en cualquier parte del overlay
+        failureMessage.addEventListener('click', closeFailurePopup, { once: true });
+        if (quizMusic) {
+            quizMusic.pause();
+            isMusicPlaying = false; 
+        }
     }
-    
+
     function handleCompletion() {
-        quizMusic.pause();
-        quizMusic.currentTime = 0;
+        if (quizMusic) {
+            quizMusic.pause();
+            quizMusic.currentTime = 0;
+            isMusicPlaying = false; 
+        }
         completionMessage.style.display = 'flex';
-        soundSuccess.play();
+        if (soundSuccess) soundSuccess.play();
         isPopupOpen = true;
     }
-    
+
     function closeFailurePopup() {
-        if (!isPopupOpen) return;
-        
         failureMessage.style.display = 'none';
         isPopupOpen = false;
-        
-        // Remover la clase incorrecta de TODOS los bloques
-        responseBlocks.forEach(block => {
-            block.classList.remove('incorrect', 'correct');
-        });
-        
-        questionAttempted = false;
-        playMusic();
-        
-        // **Asegurar que el personaje esté en posición inicial**
-        resetPlayerPosition();
+        // La misma pregunta queda cargada para reintentar
+        questionAttempted = false; 
+        // Resetear posición del jugador
+        playerX = quizGame.offsetWidth * 0.05 - (player.offsetWidth / 2);
+        playerY = 0;
+        playerVelocityY = 0;
+        isJumping = false;
+        player.style.left = `${playerX}px`;
+        player.style.bottom = `${ground.offsetHeight}px`;
+        playMusic(); 
     }
     
-    // =========================================================
-    //         EVENT LISTENERS MEJORADOS
-    // =========================================================
+    // Evento para cerrar pop-up con botón
+    if (closeFailureButton) {
+        // Usamos el listener normal para el botón, ya que el 'click' en el overlay lo manejará
+        closeFailureButton.addEventListener('click', closeFailurePopup);
+    }
     
-    // Botón de cierre
-    closeFailureButton.addEventListener('click', closeFailurePopup);
-    
-    // Cierre por teclado - CUALQUIER tecla
-    document.addEventListener('keydown', (e) => {
-        if (isPopupOpen && failureMessage.style.display === 'flex') {
-            closeFailurePopup();
-            return; // Prevenir que otras acciones se ejecuten
+    // Función para cerrar el pop-up de fallo si se presiona una tecla o se detecta movimiento.
+    function checkInputToClosePopup() {
+        if (!isPopupOpen) return;
+
+        let inputDetected = false;
+
+        // 1. Teclado (WASD o Escape)
+        if (keys['a'] || keys['d'] || keys['w'] || keys['s'] || keys['escape']) {
+            inputDetected = true;
+        }
+
+        // 2. Gamepad
+        let gamepad = null;
+        if (isGamepadConnected && gamePadIndex !== null) {
+            gamepad = navigator.getGamepads()[gamePadIndex];
+        }
+
+        if (gamepad) {
+            const xAxis = gamepad.axes[0];
+            const yAxis = gamepad.axes[1];
+
+            // Detección de movimiento de sticks
+            if (Math.abs(xAxis) > 0.1 || Math.abs(yAxis) > 0.1) {
+                inputDetected = true;
+            }
+
+            // Detección de cualquier botón presionado
+            for (let i = 0; i < gamepad.buttons.length; i++) {
+                // El botón 1 (Círculo/B) está explícitamente mencionado en el HTML para cerrar, pero cualquier botón funciona ahora.
+                if (gamepad.buttons[i]?.pressed) { 
+                    inputDetected = true;
+                    break;
+                }
+            }
         }
         
-        playMusic(); 
-        keys[e.key.toLowerCase()] = true;
-        
-        // Salto
-        const jumpKeys = ['w', 'arrowup', 'x'];
-        if (jumpKeys.includes(e.key.toLowerCase()) && !isJumping && !isPopupOpen && !questionAttempted) {
-            isJumping = true;
-            playerVelocityY = jumpForce;
-        }
-    });
+        // 3. Controles móviles (ya están en el array `keys`)
 
-    document.addEventListener('keyup', (e) => {
-        keys[e.key.toLowerCase()] = false;
-    });
-
-    // Cierre por click/touch en cualquier parte del popup
-    failureMessage.addEventListener('click', (e) => {
-        // Solo cerrar si se hace click en el overlay, no en los elementos internos
-        if (e.target === failureMessage) {
+        if (inputDetected) {
             closeFailurePopup();
         }
-    });
+    }
 
-    // Cierre por touch para móviles
-    failureMessage.addEventListener('touchend', (e) => {
-        if (e.target === failureMessage) {
-            closeFailurePopup();
-        }
-    });
 
-    responseBlocks.forEach(block => {
-        block.addEventListener('click', () => {
-            if (!isPopupOpen && !questionAttempted) {
-                checkAnswer(block);
+    // === 4. MANEJO DE EVENTOS (Gamepad, Teclado, Mobile) ===
+
+    function setupMobileControls() {
+        const controls = document.querySelectorAll('#mobile-controls .control-button');
+        controls.forEach(button => {
+            const key = button.getAttribute('data-key');
+            if (key) {
+                const handleStart = (e) => {
+                    e.preventDefault(); 
+                    // No es necesario verificar el pop-up aquí, el gameLoop lo manejará
+                    keys[key] = true;
+                    button.classList.add('active');
+                };
+                const handleEnd = () => {
+                    keys[key] = false;
+                    button.classList.remove('active');
+                };
+
+                button.addEventListener('touchstart', handleStart, { passive: false });
+                button.addEventListener('touchend', handleEnd);
+                button.addEventListener('mousedown', handleStart); // Para prueba en PC
+                button.addEventListener('mouseup', handleEnd);
             }
         });
-    });
+    }
 
+    // Bloquear flechas de teclado, usar solo WASD
+    function setupKeyboardControls() {
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            
+            // PREVENIR EL SCROLL DEL NAVEGADOR con las flechas
+            if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
+                e.preventDefault(); 
+            }
+            
+            // Solo registramos WASD y Espacio/Enter para el juego
+            if (['w', 'a', 's', 'd', ' ', 'enter', 'escape'].includes(key)) {
+                keys[key] = true;
+            }
+            playMusic();
+        });
 
-    // =========================================================
-    //         4. LÓGICA DEL JUEGO (FÍSICA y GAMEPAD)
-    // =========================================================
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+    }
 
-    // --- Gamepad Events ---
     window.addEventListener("gamepadconnected", (e) => {
         isGamepadConnected = true;
         gamePadIndex = e.gamepad.index;
-        console.log("Gamepad connected:", e.gamepad.id);
+        playMusic();
     });
 
     window.addEventListener("gamepaddisconnected", () => {
         isGamepadConnected = false;
         gamePadIndex = null;
     });
+
+    // === 5. BUCLE DE JUEGO ===
+    const groundHeight = ground.offsetHeight;
     
-    // --- Bucle Principal del Juego ---
     function gameLoop() {
-        requestAnimationFrame(gameLoop);
-
-        // --- Manejo del Gamepad para cerrar popup ---
-        if (isPopupOpen && failureMessage.style.display === 'flex' && isGamepadConnected && gamePadIndex !== null) {
-            const gamepad = navigator.getGamepads()[gamePadIndex];
-            if (gamepad) {
-                const circleButton = gamepad.buttons[O_BUTTON_INDEX];
-                const anyButtonPressed = gamepad.buttons.some((button, index) => 
-                    index !== O_BUTTON_INDEX && button.pressed
-                );
-                
-                // Cerrar con botón O o cualquier otro botón
-                if ((circleButton?.pressed && !isOButtonDown) || anyButtonPressed) {
-                    closeFailurePopup();
-                    isOButtonDown = true;
-                } else if (!circleButton?.pressed) { 
-                    isOButtonDown = false; 
-                }
-            }
+        
+        // **CORRECCIÓN: Llamar a la función de cierre del pop-up al inicio del bucle**
+        if (isPopupOpen) {
+            checkInputToClosePopup();
         }
-
-        // --- Movimiento y Física (Solo si el Popup está cerrado) ---
+        
         if (!isPopupOpen) {
-            
-            // Aplicar gravedad
+            // --- 1. Gravedad y Salto ---
             playerVelocityY += gravity;
             playerY += playerVelocityY;
 
-            // Colisión con el suelo
-            if (playerY <= 0) {
+            // Restricción del suelo
+            if (playerY < 0) {
                 playerY = 0;
                 playerVelocityY = 0;
                 isJumping = false;
             }
 
-            // --- Calcular Movimiento Horizontal ---
+            // --- 2. Gamepad & Keyboard Input ---
             let deltaX = 0;
-            if (keys['a'] || keys['arrowleft']) {
-                deltaX -= playerSpeed;
-            }
-            if (keys['d'] || keys['arrowright']) {
-                deltaX += playerSpeed;
+            let jump = false;
+
+            let gamepad = null;
+            if (isGamepadConnected && gamePadIndex !== null) {
+                gamepad = navigator.getGamepads()[gamePadIndex];
             }
             
-            // --- Gamepad Input (Movimiento y Salto) ---
-            if (isGamepadConnected && gamePadIndex !== null) {
-                const gamepad = navigator.getGamepads()[gamePadIndex];
-                if (gamepad) {
-                    playMusic();
-                    
-                    // Sticks (Eje 0)
-                    const xAxis = gamepad.axes[0]; 
-                    if (Math.abs(xAxis) > 0.1) {
-                        deltaX += xAxis * playerSpeed;
-                    }
-                    
-                    // D-Pad
-                    if (gamepad.buttons[14]?.pressed) { deltaX -= playerSpeed; }
-                    if (gamepad.buttons[15]?.pressed) { deltaX += playerSpeed; }
-                    
-                    // Salto con X (0)
-                    if (gamepad.buttons[0]?.pressed && !isXButtonDown && !isJumping && !questionAttempted) {
-                        isJumping = true;
-                        playerVelocityY = jumpForce;
-                        isXButtonDown = true;
-                    } else if (!gamepad.buttons[0]?.pressed) {
-                        isXButtonDown = false;
-                    }
+            // 2a. Gamepad Input
+            if (gamepad) {
+                const xAxis = gamepad.axes[0]; 
+                deltaX += xAxis * playerSpeed;
+                
+                // Botón X (0) para saltar
+                if (gamepad.buttons[0]?.pressed && !isXButtonDown) {
+                    jump = true;
+                    isXButtonDown = true;
+                } else if (!gamepad.buttons[0]?.pressed) {
+                    isXButtonDown = false;
                 }
             }
             
-            // Aplicar movimiento horizontal
+            // 2b. Keyboard Input (Solo WASD)
+            if (keys['a']) { deltaX -= playerSpeed; } // Solo 'a'
+            if (keys['d']) { deltaX += playerSpeed; } // Solo 'd'
+            // Teclas de salto: W o Espacio
+            if ((keys['w'] || keys[' ']) && !isJumping) { 
+                jump = true;
+            }
+            
+            if (jump) {
+                isJumping = true;
+                playerVelocityY = jumpForce;
+            }
+            
+            // --- 3. Aplicar movimiento horizontal ---
             playerX += deltaX;
 
             // Limitar los bordes de la pantalla
@@ -363,17 +407,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const gameWidth = quizGame.offsetWidth;
             playerX = Math.max(0, Math.min(playerX, gameWidth - playerWidth));
 
-            // --- Actualizar Posición ---
+            // --- 4. Actualizar Posición ---
             player.style.left = `${playerX}px`;
             player.style.bottom = `${playerY + groundHeight}px`;
 
-            // --- Comprobar colisiones ---
+            // --- 5. Comprobar colisiones ---
             checkCollision();
         }
+        
+        requestAnimationFrame(gameLoop);
     }
 
     // =========================================================
-    //         5. INICIALIZACIÓN
+    //         6. INICIALIZACIÓN
     // =========================================================
     shuffledQuestions = shuffleArray([...quizQuestions]);
     loadQuestion();
@@ -387,6 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
     player.style.left = `${playerX}px`;
     player.style.bottom = `${groundHeight}px`;
     
-    // Iniciar el bucle de juego
+    // Iniciar el bucle de juego y controles móviles
+    setupKeyboardControls();
+    setupMobileControls(); 
     requestAnimationFrame(gameLoop); 
+    
+    // Iniciar la música al primer evento de usuario
+    document.body.addEventListener('click', playMusic, { once: true });
+    document.body.addEventListener('keydown', playMusic, { once: true });
+    window.addEventListener("gamepadconnected", playMusic, { once: true });
 });

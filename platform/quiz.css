@@ -1,4 +1,4 @@
-/* ========================================================= */
+/* ========================================================= *//* ========================================================= */
 /* === QUIZ.CSS: Estilos del Modo Quiz (Plataforma) === */
 /* ========================================================= */
 
@@ -27,6 +27,7 @@
     background-color: #ff8c00;
     z-index: 20;
     border-radius: 5px;
+    transition: transform 0.1s ease-out; /* Para efectos de salto/gravedad */
 }
 
 /* --- BLOQUES DE PREGUNTAS Y RESPUESTAS --- */
@@ -61,7 +62,7 @@
 }
 
 .response-block {
-    width: 250px; /* Tamaño para que quepa la respuesta */
+    width: 250px; 
     height: 100px;
     background-color: #007bff; 
     color: white;
@@ -74,45 +75,60 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    transition: transform 0.1s, background-color 0.3s;
-    user-select: none;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    border: 3px solid #0056b3;
 }
 
 .response-block:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* **CRÍTICO:** MANTENER VISIBLE POR DEFECTO (ELIMINAR display: none) */
-.response-text {
+.response-block .response-text {
     font-size: 1.1em;
     font-weight: bold;
-    /* display: none; <-- ELIMINADO para que las respuestas se vean */
-    line-height: 1.2;
+    margin-bottom: 5px;
 }
 
-.brick {
-    /* **CRÍTICO:** OCULTAR el ladrillo '?' si la respuesta debe verse */
-    display: none; 
+.response-block .brick {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
 }
 
-
-/* --- ESTILOS DE RESPUESTA TRAS SER GOLPEADO --- */
-
-.response-block.correct {
-    background-color: #28a745; 
-    cursor: default;
-    pointer-events: none;
+/* NUEVO: ESTILO PARA RESPUESTA CORRECTA */
+.response-block.correct-answer {
+    background-color: #28a745; /* Verde */
+    border-color: #1e7e34;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
 }
 
-.response-block.incorrect {
+/* Estilo para respuesta incorrecta (puede ser temporal) */
+.response-block.incorrect-block {
     background-color: #dc3545; 
-    cursor: default;
-    pointer-events: none;
+    border-color: #a71d2a;
+    transform: scale(0.95);
 }
 
-/* --- POP-UPS DE QUIZ (ÉXITO/FALLO) --- */
+/* --- BOTÓN DE MENÚ (Solo para quiz.html) --- */
+#return-quiz-to-menu {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 60;
+    padding: 10px 15px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+}
 
+/* --- POP-UPS / MENSAJES --- */
 .quiz-popup-overlay {
     position: fixed;
     top: 0;
@@ -160,39 +176,112 @@
     cursor: pointer;
 }
 
-.instruction-text {
-    font-size: 1em;
-    color: #f0f0f0;
-    margin-top: 10px;
-}
-
-
-/* --- MENSAJE DE FINALIZACIÓN (ÉXITO) --- */
 #completion-message h2 {
     font-size: 3em;
-    color: #ffd700;
+    color: #28a745;
+}
+
+#completion-message p {
+     font-size: 1.5em;
+    margin-bottom: 30px;
 }
 
 #completion-message button {
-    background-color: #28a745;
-}
-
-/* === BOTÓN VOLVER AL MENÚ === */
-#return-quiz-to-menu {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 60; 
-    padding: 10px 20px;
-    font-size: 1em;
+    padding: 15px 30px;
+    font-size: 1.2em;
     border: none;
     border-radius: 5px;
     background-color: #007bff;
     color: white;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-#return-quiz-to-menu:hover {
-    background-color: #0056b3;
+.instruction-text {
+    font-size: 1em;
+    color: #bbb;
+    margin-top: 15px;
+}
+
+
+/* --- CONTROLES MÓVILES --- */
+#mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+    pointer-events: none; /* Permite click-through por defecto */
+}
+
+#mobile-controls .d-pad,
+#mobile-controls .action-buttons {
+    display: grid;
+    pointer-events: auto; /* Habilita interacción en los botones */
+}
+
+#mobile-controls .d-pad {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 150px;
+    height: 150px;
+    margin-left: 10px;
+}
+
+#mobile-controls .action-buttons {
+    width: 100px; 
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.control-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em;
+    font-weight: bold;
+    border-radius: 5px;
+    user-select: none;
+    opacity: 0.8;
+}
+
+#control-up { grid-area: 1 / 2 / 2 / 3; }
+#control-left { grid-area: 2 / 1 / 3 / 2; }
+#control-center { 
+    grid-area: 2 / 2 / 3 / 3; 
+    background-color: transparent; 
+    border: none;
+}
+#control-right { grid-area: 2 / 3 / 3 / 4; }
+#control-down { grid-area: 3 / 2 / 4 / 3; }
+
+#control-action {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(255, 80, 80, 0.5); 
+    border-color: rgba(255, 80, 80, 1);
+}
+
+.control-button.active {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Ocultar controles en PC */
+@media (min-width: 769px) {
+    #mobile-controls {
+        display: none;
+    }
 }
