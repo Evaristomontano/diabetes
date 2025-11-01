@@ -12,9 +12,15 @@
     flex-direction: column;
     justify-content: center; 
     align-items: center; 
-    background-color: #f0f8ff; 
+    /* background-color: #f0f8ff; <--- ELIMINADO/SUSTITUIDO */ 
     z-index: 10000; 
     text-align: center;
+    
+    /* NUEVOS ESTILOS DE FONDO */
+    background-image: url('main-background.jpg'); /* **REEMPLAZA ESTO** con tu imagen */
+    background-size: cover;
+    background-position: center;
+    color: #333; /* Asegura que el texto sea legible */
 }
 
 #main-menu h1 {
@@ -46,8 +52,34 @@
 }
 
 .menu-note {
-    font-style: italic;
-    font-size: 0.9em !important;
-    margin-top: 20px;
+    font-size: 1em !important;
+    margin-top: 15px !important;
     color: #6c757d !important;
+}
+
+
+/* NUEVO: Estilo para el contenedor del QR code */
+#qr-code-container {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente para legibilidad */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#qr-code-container img {
+    width: 120px;
+    height: 120px;
+    border: 2px solid #007bff;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+#qr-code-container p {
+    font-size: 0.9em;
+    color: #007bff;
+    margin: 0;
 }
