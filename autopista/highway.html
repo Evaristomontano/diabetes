@@ -18,14 +18,14 @@
         
       <a href="../index.html"><button id="return-highway-to-menu">🏠 Zum Hauptmenü</button></a>
 
-        <img id="autopista" src="road1.png" alt="Autopista">
+        <img id="autopista" src="road2.png" alt="Autopista">
         <img id="coche" src="car.svg" alt="Cochecito">
 
         <div class="casita" id="casita1">
             <img src="h1.svg" alt="Casita 1 Visible" class="casita-img">
             <span class="info-icon">i</span>
             <div class="info-content">
-                <img src="cont1.png" alt="Info Casita 1"> 
+                <img src="cont2.png" alt="Info Casita 1"> 
             </div>
         </div>
 
@@ -33,39 +33,44 @@
             <img src="h2.svg" alt="Casita 2 Visible" class="casita-img"> 
             <span class="info-icon">i</span>
             <div class="info-content">
-                <img src="cont2.png" alt="Info Casita 2"> 
+                <img src="cont1.png" alt="Info Casita 2"> 
             </div>
         </div>
 
-          <div class="casita" id="casita3">
+         <div class="casita" id="casita3">
             <img src="h3.svg" alt="Casita 3 Visible" class="casita-img"> 
             <span class="info-icon">i</span>
-            <div class="info-content">
-                <img src="cont2.png" alt="Info Casita 3"> 
+            <div class="info-content" data-video-url="https://player.vimeo.com/video/871391130?title=0&byline=0&portrait=0">
+                <p style="text-align: center; color: #555; padding-top: 50%;">Video wird geladen...</p>
             </div>
         </div>
-        
+
+        <div class="casita" id="casita4">
+            <img src="h4.svg" alt="Casita 4 Visible" class="casita-img"> 
+            <span class="info-icon">i</span>
+             <div class="info-content">
+               <img src="glucura1.png" alt="Info Casita 4"> 
+            </div>
+          
         </div>
+        
+    </div>
 
     <div id="info-popup" style="display: none;"> 
-       
-        <img id="popup-image" src="" alt="">
+        <button id="close-info-popup">X</button>
+        <div id="popup-content-wrapper"></div>
     </div>
     
     <div id="mobile-controls">
         <div class="d-pad">
             <div class="control-button" id="control-up" data-key="w">▲</div>
             <div class="control-button" id="control-left" data-key="a">◀</div>
-            <div class="control-button" id="control-center"></div>
             <div class="control-button" id="control-right" data-key="d">▶</div>
             <div class="control-button" id="control-down" data-key="s">▼</div>
         </div>
-        <div class="action-buttons">
-            <div class="control-button" id="control-action" data-key="x">X</div>
-        </div>
+       
     </div>
 
-    <audio id="sound-rev" src="revolucion.mp3" preload="auto"></audio>
     <audio id="sound-collision" src="chime.wav" preload="auto"></audio>
     <audio id="sound-start" src="car-noise.mp3" preload="auto"></audio>
 
