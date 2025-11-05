@@ -21,12 +21,17 @@
     background-size: cover;
     background-position: center;
     color: #333; /* Asegura que el texto sea legible */
+
+    /* Importante para el FIX de móvil: permite scroll si el contenido es muy alto */
+    overflow-y: auto; 
+    padding: 20px; /* Relleno por defecto */
 }
 
 #main-menu h1 {
     font-size: 2.5em;
     color: #007bff;
     margin-bottom: 0.5em;
+    margin-top: 0.5em; /* Añadido para asegurar espacio superior */
 }
 
 #main-menu p {
@@ -54,32 +59,59 @@
 .menu-note {
     font-size: 1em !important;
     margin-top: 15px !important;
-    color: #6c757d !important;
+    color: #666 !important;
 }
 
+/* ========================================================= */
+/* === ESTILOS PARA CÓDIGO QR (Solo en escritorio) === */
+/* ========================================================= */
 
-/* NUEVO: Estilo para el contenedor del QR code */
-#qr-code-container {
-    margin-top: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.9); /* Fondo semi-transparente para legibilidad */
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Por defecto, si el dispositivo es grande, se muestra. */
+#qr-container {
+    display: block; 
+    margin-top: 20px;
+}
+.qr-code {
+    max-width: 200px; 
+    height: auto;
 }
 
-#qr-code-container img {
-    width: 120px;
-    height: 120px;
-    border: 2px solid #007bff;
-    border-radius: 5px;
-    margin-bottom: 5px;
+/* ========================================================= */
+/* === OCULTAR QR Y FIX MÓVIL === */
+/* ========================================================= */
+
+/* OCULTA EL CONTENEDOR DEL QR para todos los dispositivos con un ancho menor o igual a 1024px */
+/* Usamos la regla más alta posible y !important para evitar cualquier sobrescritura. */
+@media (max-width: 1024px) {
+    #qr-container {
+        display: none !important; 
+    }
 }
 
-#qr-code-container p {
-    font-size: 0.9em;
-    color: #007bff;
-    margin: 0;
+/* FIX MÓVIL (Mantenemos los ajustes de tamaño para el resto del menú) */
+/* Esta regla se sigue aplicando al resto de elementos del menú en landscape */
+@media (max-width: 1024px) and (orientation: landscape) {
+    #main-menu {
+        /* Reduce el padding vertical en modo apaisado para ganar espacio */
+        padding: 10px 20px;
+        /* Vuelve a la alineación por defecto arriba en lugar de centrado para que se vea el inicio */
+        justify-content: flex-start; 
+    }
+
+    #main-menu h1 {
+        font-size: 2em;
+        margin-top: 1em; 
+        margin-bottom: 0.2em;
+    }
+
+    #main-menu p {
+        font-size: 1em;
+        margin-bottom: 1em;
+    }
+
+    #main-menu button {
+        padding: 10px 20px;
+        font-size: 1.1em;
+        margin: 5px;
+    }
 }

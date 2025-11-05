@@ -10,78 +10,83 @@ body {
 }
 
 /* ========================================================= */
-/* === New: Mobile/Touch Controls (D-Pad) === */
+/* === Mobile/Touch Controls (D-Pad) === */
 /* ========================================================= */
 
 #mobile-controls {
     position: fixed;
-    bottom: 10px;
-    left: 10px;
+    /* CORRECCIÓN DE POSICIONAMIENTO: Pegado al borde inferior */
+    bottom: 250px; 
+    left: 30px;
+    right: auto; /* Desactivar cualquier regla 'right' heredada */
+    
     z-index: 500; 
-    display: flex;
-    /* Botón de acción a la derecha */
-    right: 10px; 
-    left: auto;
-    justify-content: space-between;
-    width: 250px;
-    /* Oculto por defecto */
-    display: none; 
+    
+    /* ¡CORRECCIÓN CRÍTICA! Por defecto, los controles deben estar totalmente OCULTOS en PC */
+    display: none !important; 
+    
+    /* Configuración de layout para el móvil (aunque esté oculto por defecto) */
+    /* Lo establecemos aquí para que solo se use cuando se active con display: flex */
+    justify-content: flex-start;
+    width: auto; 
 }
 
-/* Mostrar controles móviles solo en pantallas pequeñas en apaisado */
-@media (max-width: 1024px) and (max-height: 768px) and (orientation: landscape) {
+
+/* MOSTRAR CONTROLES MÓVILES: SOLO EN PANTALLAS PEQUEÑAS Y EN MODO APAISADO */
+@media (max-width: 1024px) and (orientation: landscape) {
     #mobile-controls {
-        display: flex;
+        /* Fuerza la visualización y posición en móvil apaisado */
+        display: flex !important; 
+        z-index: 1000; 
     }
 }
 
-
 .d-pad {
     display: grid;
+    /* Áreas de la cuadrícula: ELIMINADO 'center' */
     grid-template-areas: 
         ". up ."
-        "left center right"
+        "left . right" /* El punto (.) es un espacio vacío */
         ". down .";
     width: 120px;
-    height: 120px;
+    /* CORRECCIÓN: REDUCIR ALTURA DE 120PX A 100PX PARA ACERCAR LOS BOTONES VERTICALMENTE */
+    height: 100px; 
+    margin-right: 30px;
 }
 
 .action-buttons {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: center;
+    padding-right: 10px; /* Separación del borde derecho */
 }
 
 .control-button {
-    background-color: rgba(0, 123, 255, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.8);
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.5em;
-    font-weight: bold;
-    user-select: none; 
     cursor: pointer;
-    margin: 5px;
-    transition: background-color 0.1s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    user-select: none; 
+    touch-action: manipulation; /* Optimización para toque */
 }
 
 .control-button:active {
-    background-color: rgba(0, 123, 255, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.9);
 }
 
-/* D-Pad Positioning */
-#control-up { grid-area: up; margin: 0 35px; }
-#control-down { grid-area: down; margin: 0 35px; }
+/* --- ESTILOS D-PAD --- */
+/* Margin horizontal para centrar 'up' y 'down' en su celda */
+#control-up { grid-area: up; margin: 0 40px; }
+#control-down { grid-area: down; margin: 0 40px; }
 #control-left { grid-area: left; }
 #control-right { grid-area: right; }
-#control-center { grid-area: center; width: 40px; height: 40px; background-color: rgba(0, 0, 0, 0.3); border: none; }
 
 /* Action Button: X (Jump in Quiz, Interact in Highway) */
 #control-action {
@@ -94,7 +99,7 @@ body {
 
 
 /* ========================================================= */
-/* === New: Forced Landscape Mode for Mobile Devices === */
+/* === Forced Landscape Mode for Mobile Devices === */
 /* ========================================================= */
 
 .rotate-device-message {
@@ -112,18 +117,12 @@ body {
     align-items: center;
     text-align: center;
     font-size: 1.5em;
-    padding: 20px;
 }
 
-/* Modo Apaisado forzado: Mostrar mensaje y ocultar el juego si está en modo vertical (portrait) en pantallas pequeñas */
-@media (max-width: 800px) and (max-height: 800px) and (orientation: portrait) {
-    
-    /* Oculta todos los elementos principales del body */
+@media (max-width: 1024px) and (orientation: portrait) {
     body > *:not(.rotate-device-message) {
         display: none !important;
     }
-    
-    /* Muestra el mensaje de rotación */
     .rotate-device-message {
         display: flex;
     }
