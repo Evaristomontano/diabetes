@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentQuestionIndex = 0;
     let shuffledQuestions = [];
     let isPopupOpen = false;
+    // NUEVA BANDERA: Indica si el juego ha finalizado con éxito
+    let isGameComplete = false;
     let questionAttempted = false; 
     
     // === Variables de FISICA y Movimiento ===
@@ -43,37 +45,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // === 2. DATOS DE PREGUNTAS ===
     const quizQuestions = [
         {
-            question: "Welche Funktion hat Insulin im menschlichen Körper?",
-            options: ["Es senkt den Blutzuckerspiegel.", "Es erhöht den Blutzuckerspiegel.", "Es steuert die Körpertemperatur."],
+            question: "Welche Phase ist laut der Partizipativen Entscheidungsfindung der erste Schritt?",
+            options: ["Team bilden", "Entscheidung treffen", "Möglichkeiten erwägen"],
             correctAnswer: 0, 
             correctText: "Korrekt! Insulin hilft, den Zucker aus dem Blut in die Zellen zu bringen.",
             incorrectText: "Nicht ganz richtig. Insulin ist der Schlüssel, der Zucker in die Zellen lässt."
         },
         {
-            question: "Was ist ein Symptom von hohem Blutzucker (Hyperglykämie)?",
-            options: ["Starker Durst und häufiges Wasserlassen.", "Plötzliche Gewichtszunahme.", "Sehr niedrige Herzfrequenz."],
-            correctAnswer: 0, 
+            question: "Wie viele Menschen sind in Deutschland an Diabetes Typ II erkrankt?",
+            options: ["2 Mio","9 Mio", "90 Mio"],
+            correctAnswer: 1, 
             correctText: "Richtig! Der Körper versucht, den überschüssigen Zucker loszuwerden.",
             incorrectText: "Falsch. Hoher Blutzucker führt typischerweise zu starkem Durst und Müdigkeit."
         },
         {
-            question: "Wie oft sollte der Blutzucker gemessen werden?",
-            options: ["Einmal täglich ist genug.", "Nur nach dem Essen.", "Mehrmals täglich, je nach Behandlungsplan."],
+            question: "Wie oft sollte der Blutdruck (im Rahmen von DMP) mindestens untersucht werden?",
+            options: ["Mindestens einmal jährlich", "Alle ein bis zwei Jahre", "Vierteljährlich (mindestens halbjährlich)"],
             correctAnswer: 2, 
             correctText: "Genau! Eine regelmäßige Messung ist wichtig für die Kontrolle.",
             incorrectText: "Fast! Die Messfrequenz hängt vom individuellen Behandlungsplan ab, oft mehrmals täglich."
         },
         // Añade más preguntas aquí (máx. 3 bloques visibles)
         {
-            question: "Was ist wichtig bei der Lagerung von Insulin?",
-            options: ["Im Gefrierschrank aufbewahren.", "Vor direkter Sonneneinstrahlung schützen.", "Es kann bei Raumtemperatur gelagert werden."],
-            correctAnswer: 1, 
+            question: "Welche Information liefert die Kontrolle des HbA1c-Wertes im Rahmen dieser Untersuchungen?",
+            options: ["Er dient zur Früherkennung von Netzhauterkrankungen", "Er zeigt die Technik zur Insulininjektion an", "Er ist ein Langzeit-Blutzuckerwert."],
+            correctAnswer: 2, 
             correctText: "Ausgezeichnet! Insulin ist hitze- und lichtempfindlich.",
             incorrectText: "Leider falsch. Insulin sollte kühl, aber nicht gefroren, und vor Licht geschützt gelagert werden."
         },
         {
-            question: "Welche dieser Mahlzeiten lässt den Blutzucker am schnellsten ansteigen?",
-            options: ["Ein großer Teller Gemüse.", "Ein Stück Brot mit Marmelade.", "Ein Steak ohne Beilagen."],
+            question: "Was ist eine DiGA?",
+            options: ["Eine spezielle ärztliche Fachrichtung in Deutschland.", "Geprüfte Apps auf Rezept", "Ein internationales Abkommen zur Standardisierung von Pflegeprozessen."],
             correctAnswer: 1, 
             correctText: "Korrekt! Kohlenhdratoe, especialmente simple, lassen den Blutzucker schnell steigen.",
             incorrectText: "Falsch. Kohlenhydrate, wie Brot und Marmelade, wirken sich am schnellsten aus."
@@ -92,6 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function playMusic() {
         if (!isMusicPlaying && quizMusic.paused) {
+            // Aseguramos que el loop esté activo si se está reproduciendo
+            if (quizMusic) quizMusic.loop = true; 
             quizMusic.play().catch(e => console.log("Music auto-play blocked:", e));
             isMusicPlaying = true;
             // Remover listeners después de la primera interacción
@@ -127,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkAnswer(block) {
-        if (questionAttempted) return;
+        // Bloqueo adicional para no responder si el juego ha terminado
+        if (questionAttempted || isGameComplete) return;
         questionAttempted = true;
         
         responseBlocks.forEach(b => b.style.pointerEvents = 'none'); // Desactiva clics
@@ -163,7 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkCollision() {
-        if (isPopupOpen) return;
+        // No comprobar colisiones si hay un pop-up y NO es el de fallo
+        if (isPopupOpen && failureMessage.style.display !== 'flex') return;
         
         const playerRect = player.getBoundingClientRect();
         
@@ -208,13 +214,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleCompletion() {
         if (quizMusic) {
+            // Detenemos, reseteamos la posición y, ¡lo más importante!, desactivamos el loop.
             quizMusic.pause();
             quizMusic.currentTime = 0;
+            quizMusic.loop = false; // <--- **CORRECCIÓN CLAVE**
             isMusicPlaying = false; 
         }
-        completionMessage.style.display = 'flex';
+        
+        // Limpieza de otros sonidos por si acaso se estaban reproduciendo
+        if (soundCorrect) {
+            soundCorrect.pause();
+            soundCorrect.currentTime = 0;
+        }
+        if (soundIncorrect) {
+            soundIncorrect.pause();
+            soundIncorrect.currentTime = 0;
+        }
+        
+        // Reproducir el sonido de éxito.
         if (soundSuccess) soundSuccess.play();
+
+        completionMessage.style.display = 'flex';
+        
+        // Fijamos las banderas para que el bucle de juego ignore la entrada
         isPopupOpen = true;
+        isGameComplete = true; // Establecer la nueva bandera
+        // Aseguramos que el jugador se detenga y se oculte
+        player.style.display = 'none'; 
     }
 
     function closeFailurePopup() {
@@ -240,12 +266,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Función para cerrar el pop-up de fallo si se presiona una tecla o se detecta movimiento.
     function checkInputToClosePopup() {
-        if (!isPopupOpen) return;
+        // SÓLO si el mensaje de fallo está abierto y el juego NO ha terminado
+        if (!isPopupOpen || isGameComplete || failureMessage.style.display !== 'flex') return;
 
         let inputDetected = false;
 
-        // 1. Teclado (WASD o Escape)
-        if (keys['a'] || keys['d'] || keys['w'] || keys['s'] || keys['escape']) {
+        // 1. Teclado (WASD, Espacio o Escape)
+        if (keys['a'] || keys['d'] || keys['w'] || keys['s'] || keys[' '] || keys['escape']) {
             inputDetected = true;
         }
 
@@ -264,9 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputDetected = true;
             }
 
-            // Detección de cualquier botón presionado
+            // Detección de cualquier botón presionado (incluido el botón X para saltar)
             for (let i = 0; i < gamepad.buttons.length; i++) {
-                // El botón 1 (Círculo/B) está explícitamente mencionado en el HTML para cerrar, pero cualquier botón funciona ahora.
                 if (gamepad.buttons[i]?.pressed) { 
                     inputDetected = true;
                     break;
@@ -318,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault(); 
             }
             
-            // Solo registramos WASD y Espacio/Enter para el juego
+            // Solo registramos WASD, Espacio, Enter, y Escape para el juego
             if (['w', 'a', 's', 'd', ' ', 'enter', 'escape'].includes(key)) {
                 keys[key] = true;
             }
@@ -347,11 +373,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
         
         // **CORRECCIÓN: Llamar a la función de cierre del pop-up al inicio del bucle**
+        // Esta función ahora solo cierra el pop-up de FALLO
         if (isPopupOpen) {
             checkInputToClosePopup();
         }
         
-        if (!isPopupOpen) {
+        // El bucle principal de movimiento sólo se ejecuta si NO hay pop-up
+        if (!isPopupOpen && !isGameComplete) {
             // --- 1. Gravedad y Salto ---
             playerVelocityY += gravity;
             playerY += playerVelocityY;
@@ -401,7 +429,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // --- 3. Aplicar movimiento horizontal ---
             playerX += deltaX;
-
+            // === LÓGICA DE VOLTEO DEL SPRITE (¡Nueva!) ===
+            if (deltaX < 0) { // Si se mueve a la izquierda
+                player.classList.add('facing-left');
+                player.classList.remove('facing-right'); // Asegura la clase por defecto
+            } else if (deltaX > 0) { // Si se mueve a la derecha
+                player.classList.remove('facing-left');
+                player.classList.add('facing-right'); // Asegura la clase por defecto
+            }
+            // Si deltaX == 0 (quieto), mantendrá la última dirección.
             // Limitar los bordes de la pantalla
             const playerWidth = player.offsetWidth;
             const gameWidth = quizGame.offsetWidth;

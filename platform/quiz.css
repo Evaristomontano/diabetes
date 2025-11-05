@@ -1,4 +1,4 @@
-/* ========================================================= *//* ========================================================= */
+/* ========================================================= */
 /* === QUIZ.CSS: Estilos del Modo Quiz (Plataforma) === */
 /* ========================================================= */
 
@@ -22,12 +22,21 @@
 
 #player {
    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: #ff8c00;
+    /* Usaremos medidas en pixels para el jugador */
+    width: 52px; 
+    height: 70px; 
+    
+    background-color: transparent; 
+    /* Imagen por defecto (IDLE/Salto) */
+    background-image: url('player_sprite.png'); 
+    background-size: contain; 
+    background-repeat: no-repeat;
+    background-position: center bottom; 
+    
     z-index: 20;
-    border-radius: 5px;
-    transition: transform 0.1s ease-out; /* Para efectos de salto/gravedad */
+    border-radius: 5px; 
+    
+    transition: transform 0.1s ease-out; 
 }
 
 /* --- BLOQUES DE PREGUNTAS Y RESPUESTAS --- */
@@ -97,7 +106,7 @@
     line-height: 1;
 }
 
-/* NUEVO: ESTILO PARA RESPUESTA CORRECTA */
+/* ESTILO PARA RESPUESTA CORRECTA */
 .response-block.correct-answer {
     background-color: #28a745; /* Verde */
     border-color: #1e7e34;
@@ -147,7 +156,7 @@
 }
 
 #failure-message img,
-#completion-message img { /* **CORRECCIÓN CRÍTICA: AJUSTAR TAMAÑO DE IMAGEN** */
+#completion-message img { 
     max-width: 300px; 
     height: auto;
     margin-bottom: 20px;
@@ -216,13 +225,13 @@
     padding: 10px 20px;
     background-color: rgba(0, 0, 0, 0.4);
     z-index: 99;
-    pointer-events: none; /* Permite click-through por defecto */
+    pointer-events: none; 
 }
 
 #mobile-controls .d-pad,
 #mobile-controls .action-buttons {
     display: grid;
-    pointer-events: auto; /* Habilita interacción en los botones */
+    pointer-events: auto; 
 }
 
 #mobile-controls .d-pad {
@@ -258,10 +267,13 @@
 
 #control-up { grid-area: 1 / 2 / 2 / 3; }
 #control-left { grid-area: 2 / 1 / 3 / 2; }
+/* SOLUCIÓN: Hacemos que el botón central (invisible) tenga un tamaño para que 
+   los botones de dirección se vean como un pad cruzado y no se colapsen. */
 #control-center { 
     grid-area: 2 / 2 / 3 / 3; 
-    background-color: transparent; 
-    border: none;
+    background-color: rgba(255, 255, 255, 0.1); /* Hacemos que el centro sea visible ligeramente */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Borde suave */
+    border-radius: 5px; /* Para que parezca un D-Pad moderno */
 }
 #control-right { grid-area: 2 / 3 / 3 / 4; }
 #control-down { grid-area: 3 / 2 / 4 / 3; }
@@ -278,10 +290,112 @@
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.5);
 }
+/* Clase para voltear el sprite horizontalmente (mirar a la izquierda) */
+.facing-left {
+    transform: scaleX(-1); 
+}
 
+/* Es buena práctica definir también la orientación por defecto */
+.facing-right {
+    transform: scaleX(1); 
+}
 /* Ocultar controles en PC */
 @media (min-width: 769px) {
     #mobile-controls {
         display: none;
+    }
+
+}
+/* ========================================================= */
+/* === AJUSTES PARA DISPOSITIVOS MÓVILES (Max-Width: 1024px) === */
+/* ========================================================= */
+@media (max-width: 1024px) {
+    
+    /* 1. ESCALADO GLOBAL (ZOOM OUT) y CENTRADO */
+    #quiz-game {
+        transform: scale(0.7); 
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
+        transform: translate(-50%, -50%) scale(0.7); 
+        width: 100vw; 
+        height: 100vh;
+    }
+
+    /* 2. REPOSICIONAMIENTO DE RESPUESTAS (SOLUCIONA SOLAPAMIENTO) */
+    #response-area {
+        /* Cancelamos el escalado del padre y lo revertimos */
+        transform: scale(1.43); 
+        transform-origin: center center; 
+
+        /* Apilamos verticalmente */
+        flex-direction: column; 
+        align-items: center; 
+        
+        /* Subimos el área de respuesta MÁS para crear separación total */
+        /* De 250px a 300px */
+        bottom: 300px; 
+        
+        /* CLAVE: Espaciado uniforme para evitar solapamiento */
+        justify-content: flex-start; 
+        gap: 20px; /* Separación explícita entre bloques */
+    }
+
+    .response-block {
+        width: 85%; /* Ligeramente más estrecho para móvil */
+        max-width: 300px;
+        height: 80px; 
+        
+        /* Eliminamos márgenes individuales y usamos el 'gap' del padre */
+        margin: 0; 
+        padding: 5px;
+    }
+    
+    /* Ajustes menores para el texto */
+    .response-block .response-text {
+        font-size: 0.85em; 
+    }
+    
+    /* 3. Ajustamos el jugador y el suelo */
+    #ground {
+        height: 40px; 
+    }
+    
+    #player {
+        width: 45px; 
+        height: 60px; 
+    }
+    
+    /* 4. AJUSTES PARA LOS CONTROLES MÓVILES (DPAD) */
+    #mobile-controls {
+        /* Mantenemos el escalado inverso para que el usuario pueda interactuar bien */
+        transform: scale(1.43); 
+        transform-origin: bottom center;
+        
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 120px;
+        padding: 0; /* Quitamos el padding para el D-Pad */
+    }
+
+    #mobile-controls .d-pad {
+        /* Reducimos el tamaño total del D-Pad para que quepa mejor */
+        width: 100px;
+        height: 100px;
+        margin-left: 20px;
+    }
+    
+    /* Corregimos el tamaño del botón central del D-Pad */
+    #control-center { 
+        background-color: rgba(255, 255, 255, 0.1); 
+        border: 1px solid rgba(255, 255, 255, 0.2); 
+    }
+
+    #mobile-controls .action-buttons {
+        width: 70px;
+        height: 70px;
+        margin-right: 20px;
     }
 }
